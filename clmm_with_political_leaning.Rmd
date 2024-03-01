@@ -1,0 +1,220 @@
+---
+title: "Enigmatic Compounds (With Political Leaning as Covariate)"
+author: "Qi Yu"
+date: "2024-03-01"
+output: html_document
+---
+
+REFERENCE:
+
+[Aggregate function](https://www.guru99.com/r-aggregate-function.html)
+
+[Proportional odds assumption](https://peopleanalytics-regression-book.org/gitbook/ord-reg.html)
+
+[Plotting Likert data](https://jakec007.github.io/2021-06-23-R-likert/)
+
+
+```{r warning=FALSE,message=FALSE}
+library(ordinal)
+library(dplyr)
+library(tidyr)
+library(knitr)
+library(Hmisc)
+library(likert)
+library(janitor)
+library(RColorBrewer)
+```
+
+# 1. Data preprocessing
+
+```{r}
+df <- readRDS("./data/data_with_political_leaning.rds")
+
+df <- mutate(df, 
+             prolificID = factor(prolificID),
+             item_num_only = factor(item_num_only),
+             conditions = factor(conditions),
+             response_1 = factor(response_1),
+             list = factor(list),
+             leftright_mapped = factor(leftright_mapped),
+             leftright = factor(leftright)
+) 
+
+df$conditions <- relevel(df$conditions, ref="phrasal")
+
+kable(head(df))
+```
+
+# 2. Descriptive statistics 
+
+## 2.1 Distribution of participants' ratings
+
+```{r}
+df_rate_percent <- df %>%
+  tabyl(conditions, response_1) %>%
+  adorn_percentages("row") %>% 
+  mutate_if(is.numeric, ~ . * 100) %>% # Change to percentage
+  mutate_if(is.numeric, round, 0)
+
+df_rate_percent <- as.data.frame(df_rate_percent) 
+colnames(df_rate_percent) <- c("Item", "1", "2", "3", "4", "5", "6", "7")
+df_rate_percent
+```
+
+
+```{r}
+# Get the color order and reverse it: Using blue for positive categories and red for negative categories
+colors <- rev(brewer.pal(7, "Spectral"))
+
+p <- plot(likert(summary = df_rate_percent), legend.position="right") +
+  scale_fill_manual(values = colors) + 
+  theme(text = element_text(size = 21)) +
+  guides(fill = guide_legend(title="Responses")) 
+
+p
+
+ggsave(
+  "./plots/rating_distribution.jpg",
+  plot = p,
+  width = 10, height = 3,
+  dpi = 300)
+```
+
+## 2.2 Distributions of other meta data
+
+```{r results = 'hide'}
+df_by_participant <- df %>%
+  group_by(prolificID) %>% 
+  dplyr::summarize(list = first(list), # Using the "::" syntax: The package Hmisc interferrs with dplyr 
+            age = first(age),
+            duration = first(time_in_minutes),
+            gender = first(gender),
+            leftright = first(leftright_mapped)
+            )
+
+kable(head(df_by_participant))
+```
+
+**Participants per list:**
+```{r}
+table(df_by_participant$list)
+```
+
+**Descriptive statistics of age:**
+```{r}
+mean(df_by_participant$age)
+sd(df_by_participant$age)
+```
+
+**Descriptive statistics of gender:**
+```{r}
+table(df_by_participant$gender)
+```
+
+**Descriptive statistics of political leaning:**
+```{r}
+table(df_by_participant$leftright)
+```
+
+
+# 3. Fit models 
+
+Random effects: ID, item
+
+## 3.1 A null model
+* Intercept only 
+* Random intercepts only 
+
+```{r}
+model0 <- clmm(response_1 ~ 1 + (1|item_num_only) + (1|prolificID), data=df, link="logit", Hess=TRUE)
+summary(model0)
+```
+
+## 3.2 Model 1: 
+* Conditions as fixed effect; 
+* Random intercepts only
+
+```{r}
+model1 <- clmm(response_1 ~ conditions + (1|item_num_only) + (1|prolificID), data=df, link="logit", Hess=TRUE)
+summary(model1)
+```
+
+## 3.3 Model 2:
+* Conditions as fixed effect; 
+* Random intercepts and random intercepts for items; Only random intercepts for participants
+
+```{r}
+model2 <- clmm(response_1 ~ conditions + (conditions|item_num_only) + (1|prolificID), data=df, link="logit", Hess=TRUE) # 
+summary(model2)
+```
+
+## 3.4 Model 3: 
+* Conditions as fixed effect; 
+* Random intercepts and random intercepts for participants; Only random intercepts for items
+
+```{r}
+model3 <- clmm(response_1 ~ conditions + (1|item_num_only) + (conditions|prolificID), data=df, link="logit", Hess=TRUE)
+summary(model3)
+```
+
+## 3.5 Model 4: 
+* Conditions as fixed effect; 
+* Random intercepts and random intercepts for both participants and items
+
+```{r}
+model4 <- clmm(response_1 ~ conditions + (conditions|item_num_only) + (conditions|prolificID), data=df, link="logit", Hess=TRUE)
+summary(model4)
+```
+
+## 3.6 Model 5: 
+* Conditions and political leanings as fixed effects; 
+* Random intercepts and random intercepts for both participants and items
+
+```{r}
+model5 <- clmm(response_1 ~ conditions + leftright_mapped + (conditions|item_num_only) + (conditions|prolificID), data=df, link="logit", Hess=TRUE)
+summary(model5)
+```
+
+## 3.7 Model 6: 
+* Conditions and political leanings as fixed effects; 
+* An interaction term of conditions and political leanings is included;
+* Random intercepts and random intercepts for both participants and items
+
+```{r}
+model6 <- clmm(response_1 ~ conditions*leftright_mapped + (conditions|item_num_only) + (conditions|prolificID), data=df, link="logit", Hess=TRUE)
+summary(model6)
+```
+
+
+# 4. Compare goodness of fit
+```{r}
+anova(model0, model1)
+```
+
+```{r}
+anova(model1, model2)
+```
+
+```{r}
+anova(model1, model3)
+```
+
+```{r}
+anova(model2, model4)
+```
+
+
+```{r}
+anova(model3, model4)
+```
+
+```{r}
+anova(model4, model5)
+```
+
+```{r}
+anova(model5, model6)
+```
+
+
+
