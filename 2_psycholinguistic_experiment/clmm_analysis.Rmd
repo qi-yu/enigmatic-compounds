@@ -5,14 +5,6 @@ date: "2024-03-01"
 output: html_document
 ---
 
-REFERENCE:
-
-[Aggregate function](https://www.guru99.com/r-aggregate-function.html)
-
-[Proportional odds assumption](https://peopleanalytics-regression-book.org/gitbook/ord-reg.html)
-
-[Plotting Likert data](https://jakec007.github.io/2021-06-23-R-likert/)
-
 
 ```{r warning=FALSE,message=FALSE}
 library(ordinal)
@@ -28,7 +20,7 @@ library(RColorBrewer)
 # 1. Data preprocessing
 
 ```{r}
-df <- readRDS("./data/data_with_political_leaning.rds")
+df <- readRDS("data.rds")
 
 df <- mutate(df, 
              prolificID = factor(prolificID),
@@ -58,11 +50,11 @@ df_rate_percent <- df %>%
 
 df_rate_percent <- as.data.frame(df_rate_percent) 
 colnames(df_rate_percent) <- c("Item", "1", "2", "3", "4", "5", "6", "7")
-df_rate_percent
+kable(df_rate_percent)
 ```
 
 
-```{r}
+```{r, message=FALSE}
 # Get the color order and reverse it: Using blue for positive categories and red for negative categories
 colors <- rev(brewer.pal(7, "Spectral"))
 
@@ -82,7 +74,7 @@ ggsave(
 
 ## 2.2 Distributions of other meta data
 
-```{r results = 'hide'}
+```{r}
 df_by_participant <- df %>%
   group_by(prolificID) %>% 
   dplyr::summarize(list = first(list), # Using the "::" syntax: The package Hmisc interferrs with dplyr 
@@ -119,7 +111,6 @@ table(df_by_participant$leftright)
 
 # 3. Fit models 
 
-Random effects: ID, item
 
 ## 3.1 A null model
 * Intercept only 
@@ -187,6 +178,7 @@ summary(model6)
 
 
 # 4. Compare goodness of fit
+
 ```{r}
 anova(model0, model1)
 ```
