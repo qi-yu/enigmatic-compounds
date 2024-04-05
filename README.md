@@ -1,25 +1,21 @@
-# Ad Hoc Compounds in Political Discourse
+# Ad Hoc Compounds for Stance Detection
 
 ## 1. About 
 
-This repository contains all source code and data for the following study:
+This repository contains all data and code for the following (forthcoming) paper:
 
-Qi Yu, Fabian Schlotterbeck, Regine Eckardt, and Britta Stolterfoht. 2022. An experimental study on ad hoc compounds in political discourse. 9th Experimental Pragmatics Conference (XPRAG 2022). September 22-23, IUSS Pavia, Italy. [Abstract](https://osf.io/fq69z)
+Ad Hoc Compounds for Stance Detection. To appear in *Proceedings of the Joint Workshop on Multiword Expressions and Universal Dependencies (MWE-UD 2024)*.
 
 
 
 ## 2. Content of the Repository
 
-### 2.1 Data
-The folder ```data``` contains data collected from the experiment.
-    - ```data/data.csv```: data without information on political leaning of the experiment participants
-    - ```data/data_with_political_leaning.rds```: data with information on political leaning of the experiment participants (collected in Anselm's experiment)
- 
-**Note:**
+| Folder                   | Description                                                                                                                                                                                                                                                                                                 |
+|--------------------------|-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| ```1_corpus_study```               |   Data and code for the corpus study (see Section 3.1 of the paper)                                                                    |
+| ```2_psycholinguistic_experiment```   | Data and code for the psycholinguistic experiment (see Section 3.3 of the paper)                                                                                                                                                                                                              |
+| ```3_LLM_simulation```             | Code for the simulation experiment with large language models (see Section 4 of the paper)     |
 
-The item amount of the two datasets differs slightly, as the political leaning of some participants were missing due to an internal system error in Anselm's experiment
+## 3. Cite the paper
 
-### 2.2 Code
-
-- ```clmm.Rmd```: analysis published in the XPRAG 2022 abstract
-- ```clmm_with_political_leanings.Rmd```: additional analyses after the publication of the XPRAG 2022 abstract. Specifically, the political leaning of the experiment participants is added as a new predictor. 
+(Will be added once the official proceedings are released.)
