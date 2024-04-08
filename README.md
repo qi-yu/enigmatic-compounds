@@ -8,11 +8,13 @@ Qi Yu, Fabian Schlotterbeck, Hening Wang, Naomi Reichmann, Britta Stolterfoht, R
 To appear in *Proceedings of the Joint Workshop on Multiword Expressions and Universal Dependencies (MWE-UD 2024)*.
 
 **A short summary of the paper:**
-We examine *enigmatic compounds* in German, i.e., ad hoc compounds that express attitudinal meaning of the speakers. 
+
+We examine German ad hoc compounds that express attitudinal meaning of the speakers. 
 While such compounds are crucial for stance detection, the state-of-the-art dependency parsers and
-Universal Dependency treebanks struggle with parsing them and identifying their attitudinal meanings thereby. 
-Through a corpus analysis and a psycholinguistic experiment, we verify that these compounds systematically convey attitudinal meaning. 
-Furthermore, we report initial experiments with large language models that underline the difficulty in capturing such attitudinal meanings.
+Universal Dependency treebanks struggle with parsing them. 
+Through a corpus analysis and a psycholinguistic experiment, we verify that such compounds systematically convey attitudinal meaning. 
+Furthermore, we report initial experiments with large language models that underline 
+the difficulties in capturing attitudinal meanings conveyed by ad hoc compounds.
 
 ## 2. Content of the Repository
 
