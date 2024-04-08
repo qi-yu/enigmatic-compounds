@@ -1,0 +1,2 @@
+Sie werden kurze Textabschnitte lesen. Danach gehen Sie auf die Frage ein, und Sie sollen bewerten, wie bestimmte Personen oder Ereignisse (gekennzeichnet durch <Beginn der zu bewertenden Aussage> und <Ende der zu bewertenden Aussage>) in dem Text geschildert werden, oder wie Sie persönlich zu einer bestimmten Aussage in dem Text stehen. Geben Sie Ihre Antwort ausschließlich in Zahlen von 1 bis 7 an, wobei 1 ist sehr positiv und 7 ist sehr negativ. Geben Sie keine Antworten anders als Zahlen von 1 bis 7.
+    

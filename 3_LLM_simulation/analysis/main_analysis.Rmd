@@ -1,0 +1,366 @@
+---
+title: "Main_analysis for Ad hoc composita paper on MWE Workshop 2024"
+output: html_document
+date: "2024-02-29"
+author: "Hening Wang"
+---
+```{r}
+rm(list = ls())
+library(tidyverse)
+library(ggplot2)
+library(ordinal)
+```
+
+# Main Analysis
+
+This document contains the main analysis for the ad hoc composita paper on MWE Workshop 2024.
+
+Steps to be taken:
+1. Data import
+2. Define functions
+3. Apply functions to model data
+4. Visualize results
+5. Write up results
+
+## Data Import
+
+```{r}
+human_data <- read.csv("../data/data.csv")
+```
+
+(Batch) Import further LLM simulation data.
+```{r}
+
+# Specify the directory containing the CSV files
+directory <- "../model_data/"
+
+# Define the variable components
+suffix <- NA
+models <- c("gpt-4", "gpt-3.5-turbo")
+temperatures <- c(0.0, 1.0, 2.0)
+seed <- 0
+num_examples <- 0
+
+# Generate file paths for each combination of parameters
+file_paths <- list()
+for (model in models) {
+  for (temperature in temperatures) {
+    file_name <- sprintf("model_data%s_%s_temperature%.1f_seed%d_examples%d.csv", 
+                         ifelse(is.na(suffix), "", paste("_", suffix, sep = "")), 
+                         model, temperature, seed, num_examples)
+    file_path <- paste(directory, file_name, sep = "")
+    file_paths[[length(file_paths) + 1]] <- file_path
+  }
+}
+
+print(file_paths)
+
+# Initialize an empty list to store dataframes
+dataframes <- list()
+
+# Loop through each file path and read the CSV into a dataframe
+for (file_path in file_paths) {
+  dataframe <- read.csv(file_path)
+  dataframes[[length(dataframes) + 1]] <- dataframe
+}
+
+# Combine all dataframes into a single dataframe
+model_data_all <- do.call(rbind, dataframes)
+
+# Now 'model_data_all' contains all the data from the CSV files
+
+```
+## Comparison between model data with different parameter settings or models
+
+What we care about are two metrics: correlation scores of by-condition and by-item alignment with human data. We will define two functions to calculate these metrics and then apply them to the model data.
+
+In fact, temperature greater equal to 1 lead to non-numeric response. We will only consider temperature equal to 0.0.
+
+```{r}
+# Define functions
+
+by_condition_correlation <- function(model_data, human_data) {
+  # Step 1: Calculate mean judgement for each data source
+  model_data %>% 
+    group_by(cond) %>% 
+    mutate(generation_1 = as.numeric(generation_1)) %>%
+    summarise(mean_judgement = mean(generation_1)) -> model_data_for_merging
+  
+  human_data %>%
+    subset(conditions != "a") %>%
+    group_by(conditions) %>% 
+    summarise(mean_judgement = mean(response_1)) %>%
+    mutate(cond = conditions) -> human_data_for_merging
+  
+  # Step 2: Merge model_data and human_data
+  merged_data <- merge(model_data_for_merging, human_data_for_merging, by = c("cond"), suffixes = c("_model", "_human"))
+  
+  # Step 3: Calculate R-squared coefficient
+  model <- lm(mean_judgement_human ~ mean_judgement_model, data = merged_data)
+  summary(model)$r.squared
+  
+  # Step 4: Calculate p-value, r, t and df
+  cor.test(merged_data$mean_judgement_model, merged_data$mean_judgement_human)
+  
+  # Step 5: Return the R-squared coefficient. p-value, r, t and df
+  return(list(r_squared = summary(model)$r.squared, 
+              p_value = cor.test(merged_data$mean_judgement_model, merged_data$mean_judgement_human)$p.value,
+              r = cor.test(merged_data$mean_judgement_model, merged_data$mean_judgement_human)$estimate,
+              t = cor.test(merged_data$mean_judgement_model, merged_data$mean_judgement_human)$statistic,
+              df = cor.test(merged_data$mean_judgement_model, merged_data$mean_judgement_human)$parameter))
+}
+
+by_item_correlation <- function(model_data, human_data) {
+  # Step 1: Calculate mean judgement for each data source
+  model_data %>% 
+    group_by(item) %>% 
+    mutate(generation_1 = as.numeric(generation_1)) %>%
+    summarise(mean_judgement = mean(generation_1)) -> model_data_for_merging
+  
+  human_data %>%
+    subset(conditions != "a") %>%
+    group_by(item) %>% 
+    summarise(mean_judgement = mean(response_1)) %>%
+    mutate(item = item) -> human_data_for_merging
+  
+  # Step 2: Merge model_data and human_data
+  merged_data <- merge(model_data_for_merging, human_data_for_merging, by = c("item"), suffixes = c("_model", "_human"))
+  
+  # Step 3: Calculate R-squared coefficient
+  model <- lm(mean_judgement_human ~ mean_judgement_model, data = merged_data)
+  summary(model)$r.squared
+  
+  # Step 4: Calculate p-value, r, t and df
+  cor.test(merged_data$mean_judgement_model, merged_data$mean_judgement_human)
+  
+  # Step 5: Return the R-squared coefficient. p-value, r, t and df
+  return(list(r_squared = summary(model)$r.squared, 
+              p_value = cor.test(merged_data$mean_judgement_model, merged_data$mean_judgement_human)$p.value,
+              r = cor.test(merged_data$mean_judgement_model, merged_data$mean_judgement_human)$estimate,
+              t = cor.test(merged_data$mean_judgement_model, merged_data$mean_judgement_human)$statistic,
+              df = cor.test(merged_data$mean_judgement_model, merged_data$mean_judgement_human)$parameter))
+}
+```
+
+### GPT-4 results
+
+This result is better than with GPT-3.5. We report this statistics in our paper.
+```{r}
+model_data_gpt_4 <- model_data_all %>%
+  filter(model == "gpt-4",
+         temperature == 0)
+
+by_condition_correlation(model_data_gpt_4, human_data)
+
+by_item_correlation(model_data_gpt_4, human_data)
+
+model_data <- model_data_gpt_4
+
+```
+
+## GPT-3.5 data
+```{r}
+model_data_gpt_3_5_temperature_0 <- model_data_all %>%
+  filter(model == "gpt-3.5-turbo",
+         temperature == 0) 
+
+by_condition_correlation(model_data_gpt_3_5_temperature_0, human_data)
+
+by_item_correlation(model_data_gpt_3_5_temperature_0, human_data)
+
+```
+
+## Descriptive statistics
+
+From below, the model data refers to the GPT-4 data.
+
+### Model Data
+```{r}
+model_data %>% 
+  group_by(cond) %>% 
+  mutate(generation_1 = as.numeric(generation_1)) %>%
+  summarise(mean_judgement = mean(generation_1), 
+            sd_judgement = sd(generation_1)) %>%
+  mutate(source = "model") -> model_data_for_merging 
+
+print(model_data_for_merging)
+```
+
+### Human Data
+```{r}
+human_data %>%
+  subset(conditions != "a") %>%
+  group_by(conditions) %>% 
+  summarise(mean_judgement = mean(response_1), 
+            sd_judgement = sd(response_1)) %>%
+  mutate(cond = conditions,
+         source = "human") -> human_data_for_merging
+
+print(human_data_for_merging)
+```
+
+## Visualisation
+
+```{r}
+# Define theme parameters
+
+my_theme <- function() {
+theme_minimal() +
+theme(
+plot.title = element_text(size = 20, face = "bold"),
+axis.title.x = element_text(size = 22, margin = margin(t = 10, r = 0, b = 0, l = 0)),
+axis.title.y = element_text(size = 22, margin = margin(t = 0, r = 10, b = 0, l = 0)),
+axis.text.x = element_text(size = 22, angle = 0, hjust = 1),
+axis.text.y = element_text(size = 22),
+legend.title = element_text(size = 25),
+legend.text = element_text(size = 25),
+strip.text.x = element_text(size = 25),
+strip.text.y = element_text(size = 25, angle = 0),
+panel.grid.major = element_line(colour = "grey90", size = 0.25),
+panel.grid.minor = element_blank(),
+panel.border = element_blank(),
+panel.background = element_blank(),
+legend.position="bottom"
+)
+}
+```
+
+
+### Model Data
+```{r}
+model_data %>%
+  ggplot(aes(x = generation_1, fill = cond)) +
+  geom_density(alpha = 0.5) +
+  my_theme()
+```
+
+
+### Human Data
+```{r}
+human_data %>%
+  subset(conditions != "a") %>%
+  ggplot(aes(x = response_1, fill = conditions)) +
+  geom_density(alpha = 0.5) +
+  my_theme()
+```
+## Mean plot with CIs
+
+### Model Data
+```{r}
+model_data %>%
+  ggplot(aes(x = cond, y = generation_1)) +
+  stat_summary(fun.data = "mean_sdl") +
+  my_theme()
+```
+### Human Data
+```{r}
+human_data %>%
+  subset(conditions != "a") %>%
+  ggplot(aes(x = conditions, y = response_1)) +
+  stat_summary(fun.data = "mean_sdl") +
+  my_theme()
+```
+## By-condition correlation plot
+
+```{r}
+# Merge model_data and human_data
+merged_data <- merge(model_data_for_merging, human_data_for_merging, by = c("cond"), suffixes = c("_model", "_human"))
+
+# Correlation plot
+merged_data %>%
+  ggplot(aes(x = mean_judgement_model, y = mean_judgement_human)) +
+  geom_point() +
+  geom_smooth(method = "lm") +
+  my_theme()
+
+# Step 3: Calculate R-squared coefficient
+model <- lm(mean_judgement_human ~ mean_judgement_model, data = merged_data)
+summary(model)
+
+cor.test(merged_data$mean_judgement_model, merged_data$mean_judgement_human)
+
+```
+
+## By-item correlation plot
+```{r}
+# Step 1: Calculate mean judgement for each item
+human_data %>%
+  subset(conditions != "a") %>%
+  group_by(item, conditions) %>%
+  summarise(mean_judgement = mean(response_1)) -> human_data_by_item
+
+model_data %>%
+  group_by(item, cond) %>%
+  mutate(generation_1 = as.numeric(generation_1), conditions = cond) %>%
+  summarise(mean_judgement = mean(generation_1)) -> model_data_by_item
+
+# Step 2: Merge human_data_by_item and model_data_by_item
+merged_data_by_item <- merge(human_data_by_item, model_data_by_item, by = c("item"), suffixes = c("_human", "_model"))
+
+# Step 3: Calculate correlation
+
+correlation_by_item <- cor.test(merged_data_by_item$mean_judgement_model, merged_data_by_item$mean_judgement_human)
+
+model_by_item <- lm(mean_judgement_human ~ mean_judgement_model, data = merged_data_by_item)
+summary(model_by_item)
+
+# Step 4: Print or use the correlation
+print(correlation_by_item)
+```
+```{r}
+# Calculate correlation coefficient
+correlation_coefficient <- cor.test(merged_data_by_item$mean_judgement_model, merged_data_by_item$mean_judgement_human)$estimate
+
+by_item_correlation_plot <- merged_data_by_item %>%
+  ggplot(aes(x = mean_judgement_model, y = mean_judgement_human)) +
+  geom_point(shape = 16, size = 3, color = "blue", alpha = 0.6, position=position_dodge(width=0.3)) +
+  geom_smooth(method = "lm", color = "red", linetype = "dashed", size = 1) +
+  labs(x = "Mean Human Rating", y = "Mean Model Rating") +
+  my_theme() +
+  # Add correlation coefficient annotation
+  annotate("text", x = max(merged_data_by_item$mean_judgement_model), 
+           y = min(merged_data_by_item$mean_judgement_human), 
+           label = paste("r =", round(correlation_coefficient, 3)), 
+           hjust = 1, vjust = -3,
+           size = 8)
+
+print(by_item_correlation_plot)
+ggsave("by_item_correlation_plot.png", by_item_correlation_plot)
+```
+
+
+## Model fitting
+
+```{r}
+# Manipulate a new data frame for model fitting
+# The idea is to duplicate (unique) model data for each human participant
+# model_data_by_item and human_data should be used for merging
+
+model_data_by_item %>% mutate(mean_rating = as.factor(mean_judgement)) -> model_data_by_item
+human_data %>% mutate(mean_rating = as.factor(response_1)) -> human_data
+
+# Merge model data and human data by item
+data_model_fit <- inner_join(model_data_by_item, human_data, by = "item", suffix = c("_model", "_human"))
+
+print(data_model_fit)
+```
+
+
+* with estimator 
+* fitting random intercepts and random slopes
+* with slope/intercept correlation
+
+```{r}
+data_model_fit <- data_model_fit %>%
+  mutate(response_1 = as.factor(response_1))
+# (conditions|id) + (conditions|item)
+model_full <- clmm(response_1 ~ conditions + mean_rating_model + (1|id), data=data_model_fit, link="logit", Hess=False)
+summary(model_full)
+
+```
+```{r}
+model_1 <- update(model_full, . ~ .- mean_rating_model)
+anova(model_full, model_1)
+```
+
+
