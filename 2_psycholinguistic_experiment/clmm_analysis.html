@@ -9,7 +9,6 @@
 <meta http-equiv="X-UA-Compatible" content="IE=EDGE" />
 
 
-<meta name="author" content="Qi Yu" />
 
 <meta name="date" content="2024-03-01" />
 
@@ -352,7 +351,6 @@ display: none;
 
 <h1 class="title toc-ignore">Enigmatic Compounds (With Political Leaning
 as Covariate)</h1>
-<h4 class="author">Qi Yu</h4>
 <h4 class="date">2024-03-01</h4>
 
 </div>
@@ -774,7 +772,7 @@ summary(model1)</code></pre>
 <h2>3.3 Model 2:</h2>
 <ul>
 <li>Conditions as fixed effect;</li>
-<li>Random intercepts and random intercepts for items; Only random
+<li>Random intercepts and random slopes for items; Only random
 intercepts for participants</li>
 </ul>
 <pre class="r"><code>model2 &lt;- clmm(response_1 ~ conditions + (conditions|item_num_only) + (1|prolificID), data=df, link=&quot;logit&quot;, Hess=TRUE) # 
@@ -816,8 +814,8 @@ summary(model2)</code></pre>
 <h2>3.4 Model 3:</h2>
 <ul>
 <li>Conditions as fixed effect;</li>
-<li>Random intercepts and random intercepts for participants; Only
-random intercepts for items</li>
+<li>Random intercepts and random slopes for participants; Only random
+intercepts for items</li>
 </ul>
 <pre class="r"><code>model3 &lt;- clmm(response_1 ~ conditions + (1|item_num_only) + (conditions|prolificID), data=df, link=&quot;logit&quot;, Hess=TRUE)
 summary(model3)</code></pre>
@@ -858,7 +856,7 @@ summary(model3)</code></pre>
 <h2>3.5 Model 4:</h2>
 <ul>
 <li>Conditions as fixed effect;</li>
-<li>Random intercepts and random intercepts for both participants and
+<li>Random intercepts and random slopes for both participants and
 items</li>
 </ul>
 <pre class="r"><code>model4 &lt;- clmm(response_1 ~ conditions + (conditions|item_num_only) + (conditions|prolificID), data=df, link=&quot;logit&quot;, Hess=TRUE)
@@ -903,7 +901,7 @@ summary(model4)</code></pre>
 <h2>3.6 Model 5:</h2>
 <ul>
 <li>Conditions and political leanings as fixed effects;</li>
-<li>Random intercepts and random intercepts for both participants and
+<li>Random intercepts and random slopes for both participants and
 items</li>
 </ul>
 <pre class="r"><code>model5 &lt;- clmm(response_1 ~ conditions + leftright_mapped + (conditions|item_num_only) + (conditions|prolificID), data=df, link=&quot;logit&quot;, Hess=TRUE)
@@ -952,7 +950,7 @@ summary(model5)</code></pre>
 <li>Conditions and political leanings as fixed effects;</li>
 <li>An interaction term of conditions and political leanings is
 included;</li>
-<li>Random intercepts and random intercepts for both participants and
+<li>Random intercepts and random slopes for both participants and
 items</li>
 </ul>
 <pre class="r"><code>model6 &lt;- clmm(response_1 ~ conditions*leftright_mapped + (conditions|item_num_only) + (conditions|prolificID), data=df, link=&quot;logit&quot;, Hess=TRUE)
@@ -1099,19 +1097,19 @@ summary(model6)</code></pre>
 ##        no.par   AIC  logLik LR.stat df Pr(&gt;Chisq)
 ## model4     20 11802 -5881.0                      
 ## model5     22 11806 -5880.8  0.3835  2     0.8255</code></pre>
-<pre class="r"><code>anova(model5, model6)</code></pre>
+<pre class="r"><code>anova(model4, model6)</code></pre>
 <pre><code>## Likelihood ratio tests of cumulative link models:
 ##  
 ##        formula:                                                                                             
-## model5 response_1 ~ conditions + leftright_mapped + (conditions | item_num_only) + (conditions | prolificID)
+## model4 response_1 ~ conditions + (conditions | item_num_only) + (conditions | prolificID)                   
 ## model6 response_1 ~ conditions * leftright_mapped + (conditions | item_num_only) + (conditions | prolificID)
 ##        link: threshold:
-## model5 logit flexible  
+## model4 logit flexible  
 ## model6 logit flexible  
 ## 
-##        no.par   AIC  logLik LR.stat df Pr(&gt;Chisq)
-## model5     22 11806 -5880.8                      
-## model6     26 11812 -5880.0  1.6202  4     0.8052</code></pre>
+##        no.par   AIC logLik LR.stat df Pr(&gt;Chisq)
+## model4     20 11802  -5881                      
+## model6     26 11812  -5880  2.0037  6     0.9194</code></pre>
 </div>
 
 

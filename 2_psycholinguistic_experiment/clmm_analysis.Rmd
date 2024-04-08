@@ -1,6 +1,5 @@
 ---
 title: "Enigmatic Compounds (With Political Leaning as Covariate)"
-author: "Qi Yu"
 date: "2024-03-01"
 output: html_document
 ---
@@ -132,7 +131,7 @@ summary(model1)
 
 ## 3.3 Model 2:
 * Conditions as fixed effect; 
-* Random intercepts and random intercepts for items; Only random intercepts for participants
+* Random intercepts and random slopes for items; Only random intercepts for participants
 
 ```{r}
 model2 <- clmm(response_1 ~ conditions + (conditions|item_num_only) + (1|prolificID), data=df, link="logit", Hess=TRUE) # 
@@ -141,7 +140,7 @@ summary(model2)
 
 ## 3.4 Model 3: 
 * Conditions as fixed effect; 
-* Random intercepts and random intercepts for participants; Only random intercepts for items
+* Random intercepts and random slopes for participants; Only random intercepts for items
 
 ```{r}
 model3 <- clmm(response_1 ~ conditions + (1|item_num_only) + (conditions|prolificID), data=df, link="logit", Hess=TRUE)
@@ -150,7 +149,7 @@ summary(model3)
 
 ## 3.5 Model 4: 
 * Conditions as fixed effect; 
-* Random intercepts and random intercepts for both participants and items
+* Random intercepts and random slopes for both participants and items
 
 ```{r}
 model4 <- clmm(response_1 ~ conditions + (conditions|item_num_only) + (conditions|prolificID), data=df, link="logit", Hess=TRUE)
@@ -159,7 +158,7 @@ summary(model4)
 
 ## 3.6 Model 5: 
 * Conditions and political leanings as fixed effects; 
-* Random intercepts and random intercepts for both participants and items
+* Random intercepts and random slopes for both participants and items
 
 ```{r}
 model5 <- clmm(response_1 ~ conditions + leftright_mapped + (conditions|item_num_only) + (conditions|prolificID), data=df, link="logit", Hess=TRUE)
@@ -169,7 +168,7 @@ summary(model5)
 ## 3.7 Model 6: 
 * Conditions and political leanings as fixed effects; 
 * An interaction term of conditions and political leanings is included;
-* Random intercepts and random intercepts for both participants and items
+* Random intercepts and random slopes for both participants and items
 
 ```{r}
 model6 <- clmm(response_1 ~ conditions*leftright_mapped + (conditions|item_num_only) + (conditions|prolificID), data=df, link="logit", Hess=TRUE)
@@ -187,6 +186,7 @@ anova(model0, model1)
 anova(model1, model2)
 ```
 
+
 ```{r}
 anova(model1, model3)
 ```
@@ -203,10 +203,11 @@ anova(model3, model4)
 ```{r}
 anova(model4, model5)
 ```
-
 ```{r}
-anova(model5, model6)
+anova(model4, model6)
 ```
+
+
 
 
 
