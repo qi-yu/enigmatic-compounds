@@ -39,3 +39,7 @@ This work is licensed under a
 [cc-by-nc-sa]: http://creativecommons.org/licenses/by-nc-sa/4.0/
 [cc-by-nc-sa-image]: https://licensebuttons.net/l/by-nc-sa/4.0/88x31.png
 [cc-by-nc-sa-shield]: https://img.shields.io/badge/License-CC%20BY--NC--SA%204.0-lightgrey.svg
+
+## 5. Acknowledgement
+This project is funded by the Deutsche Forschungsgemeinschaft (DFG – German Research Foundation) under Germany‘s Excellence Strategy – EXC-2035/1 – 390681379.
+
