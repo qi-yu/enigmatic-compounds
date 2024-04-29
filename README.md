@@ -11,7 +11,7 @@
 
 This repository contains all data and code for the following (forthcoming) paper:
 
-Qi Yu, Fabian Schlotterbeck, Hening Wang, Naomi Reichmann, Britta Stolterfoht, Regine Eckardt and Miriam Butt. Ad Hoc Compounds for Stance Detection. 
+> Qi Yu, Fabian Schlotterbeck, Hening Wang, Naomi Reichmann, Britta Stolterfoht, Regine Eckardt and Miriam Butt. Ad Hoc Compounds for Stance Detection. 
 To appear in *Proceedings of the Joint Workshop on Multiword Expressions and Universal Dependencies (MWE-UD 2024)*.
 
 **A short summary of the paper:**
